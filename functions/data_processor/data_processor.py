@@ -22,9 +22,13 @@ s3_client = boto3.client('s3',
     )
 )
 
+# Initialize EventBridge client
+eventbridge_client = boto3.client('events')
+
 # Get environment variables
 BUCKET_NAME = os.environ.get('BUCKET_NAME')
 REGION = os.environ.get('REGION', 'us-east-1')
+EVENT_BUS_NAME = os.environ.get('EVENT_BUS_NAME', 'default')
 
 def lambda_handler(event, context):
     """
@@ -34,6 +38,7 @@ def lambda_handler(event, context):
     Idempotency: Uses file hash and metadata to prevent duplicate processing.
     Error Handling: Comprehensive error handling with structured logging.
     Retries: Built-in retries for transient failures.
+    EventBridge: Publishes events to trigger next stage of processing.
     """
     correlation_id = str(uuid.uuid4())
     
@@ -43,6 +48,7 @@ def lambda_handler(event, context):
             'message': 'Data processor lambda triggered',
             'bucket_name': BUCKET_NAME,
             'region': REGION,
+            'event_bus_name': EVENT_BUS_NAME,
             'lambda_request_id': context.aws_request_id if context else None
         })
         
@@ -95,6 +101,12 @@ def lambda_handler(event, context):
             correlation_id, object_etag
         )
         
+        # Publish EventBridge event to trigger next stage (data analyzer)
+        publish_processing_complete_event(
+            processed_files, object_key, len(valid_records), 
+            len(invalid_records), correlation_id
+        )
+        
         # Log summary
         log_event(correlation_id, 'processing_complete', {
             'total_valid_records': len(valid_records),
@@ -128,12 +140,86 @@ def lambda_handler(event, context):
             'correlation_id': correlation_id
         })
 
+def publish_processing_complete_event(processed_files: Dict, source_file: str, 
+                                    valid_count: int, invalid_count: int, correlation_id: str):
+    """
+    Publish processing complete event to EventBridge to trigger data analyzer.
+    Only publishes event if there are valid records to analyze.
+    """
+    try:
+        # Only trigger analysis if there are valid records
+        if valid_count == 0:
+            log_event(correlation_id, 'no_analysis_needed', {
+                'message': 'No valid records found, skipping analysis trigger',
+                'source_file': source_file,
+                'invalid_count': invalid_count
+            }, level='WARNING')
+            return
+        
+        # Create event detail with all necessary information for the analyzer
+        event_detail = {
+            'correlation_id': correlation_id,
+            'source_file': source_file,
+            'processed_file': processed_files.get('processed_file'),
+            'rejected_file': processed_files.get('rejected_file'),
+            'valid_records': valid_count,
+            'invalid_records': invalid_count,
+            'processing_timestamp': datetime.utcnow().isoformat(),
+            'bucket_name': BUCKET_NAME,
+            'region': REGION,
+            'trigger_analysis': True,
+            'data_quality_score': round((valid_count / (valid_count + invalid_count)) * 100, 2) if (valid_count + invalid_count) > 0 else 0
+        }
+        
+        # Publish event to EventBridge
+        response = eventbridge_client.put_events(
+            Entries=[
+                {
+                    'Source': 'madhu.data-processing',
+                    'DetailType': 'Processing Complete',
+                    'Detail': json.dumps(event_detail),
+                    'EventBusName': EVENT_BUS_NAME,
+                    'Time': datetime.utcnow()
+                }
+            ]
+        )
+        
+        # Check if event was published successfully
+        failed_entries = response.get('FailedEntryCount', 0)
+        if failed_entries > 0:
+            log_event(correlation_id, 'event_publish_failed', {
+                'failed_entries': failed_entries,
+                'failures': response.get('Entries', [])
+            }, level='ERROR')
+            raise Exception(f"Failed to publish {failed_entries} events to EventBridge")
+        
+        log_event(correlation_id, 'processing_event_published', {
+            'event_type': 'Processing Complete',
+            'event_bus': EVENT_BUS_NAME,
+            'valid_records': valid_count,
+            'invalid_records': invalid_count,
+            'processed_file': processed_files.get('processed_file'),
+            'data_quality_score': event_detail['data_quality_score'],
+            'event_id': response['Entries'][0].get('EventId') if response.get('Entries') else None
+        })
+        
+    except Exception as e:
+        log_event(correlation_id, 'event_publish_error', {
+            'error': str(e),
+            'error_type': type(e).__name__,
+            'event_bus': EVENT_BUS_NAME,
+            'source_file': source_file
+        }, level='ERROR')
+        # Don't re-raise the exception as this shouldn't fail the main processing
+        # The file has been processed successfully, event publishing is secondary
+
 def log_event(correlation_id: str, event_type: str, details: Dict, level: str = 'INFO'):
     """Structured logging helper"""
     log_entry = {
         'timestamp': datetime.utcnow().isoformat(),
         'correlation_id': correlation_id,
         'event': event_type,
+        'service': 'data-processor',
         **details
     }
     

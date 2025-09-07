@@ -1,0 +1,2 @@
+- [https://docs.aws.amazon.com/nova/latest/userguide/complete-request-schema.html](https://docs.aws.amazon.com/nova/latest/userguide/complete-request-schema.html)
+- 

@@ -26,6 +26,9 @@ DYNAMODB_TABLE = os.environ.get('DYNAMODB_TABLE')
 REGION = os.environ.get('REGION', 'us-east-1')
 EVENT_BUS_NAME = os.environ.get('EVENT_BUS_NAME', 'default')
 
+BEDROCK_MODEL_ID = os.environ.get('BEDROCK_MODEL_ID')
+BEDROCK_MAX_TOKENS = os.environ.get('BEDROCK_MAX_TOKENS')
+
 def lambda_handler(event, context):
     """
     Lambda function to analyze processed data using Amazon Bedrock.
@@ -82,7 +85,16 @@ def lambda_handler(event, context):
         
         # Perform Bedrock analysis
         analysis_results = analyze_with_bedrock(processed_data, correlation_id)
-        
+
+        if not analysis_results:
+            log_event(correlation_id, 'no_analysis_results', {
+                'message': 'No analysis results returned from Bedrock'
+            }, level='WARNING')
+            return create_response(200, {
+                'message': 'No analysis results to process',
+                'correlation_id': correlation_id
+            })
+
         # Store results in DynamoDB
         analysis_id = store_analysis_results(
             analysis_results, processed_file, source_file, 
@@ -172,57 +184,71 @@ def download_processed_data(processed_file: str, correlation_id: str) -> List[Di
         raise
 
 def analyze_with_bedrock(data: List[Dict], correlation_id: str) -> Dict:
-    """Analyze data using Amazon Bedrock"""
+    """Analyze data using Amazon Bedrock (Nova Lite)"""
     try:
-        # Prepare data summary for analysis
         data_summary = prepare_data_summary(data)
-        
-        # Create prompt for Bedrock
         prompt = create_analysis_prompt(data_summary)
-        
+
         log_event(correlation_id, 'calling_bedrock', {
-            'model': 'anthropic.claude-3-sonnet-20240229-v1:0',
+            'model': BEDROCK_MODEL_ID,
             'data_records': len(data)
         })
-        
-        # Call Bedrock
+
+        # Nova Lite expects system + messages + inferenceConfig
+        body = {
+            "system": [
+                {"text": "You are a data analysis assistant. Provide insights, detect anomalies, and suggest recommendations based on the provided data."}
+            ],
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        {"text": prompt}
+                    ]
+                }
+            ],
+            "inferenceConfig": {
+                "maxTokens": int(BEDROCK_MAX_TOKENS ),
+                "temperature": 0.7,
+                "topP": 0.9
+            }
+        }
+
         response = bedrock_client.invoke_model(
-            modelId='anthropic.claude-3-sonnet-20240229-v1:0',
-            body=json.dumps({
-                "anthropic_version": "bedrock-2023-05-31",
-                "max_tokens": 2000,
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": prompt
-                    }
-                ]
-            }),
+            modelId=BEDROCK_MODEL_ID,
+            body=json.dumps(body),
             contentType='application/json'
         )
-        
-        # Parse Bedrock response
+
         result = json.loads(response['body'].read())
-        analysis_text = result['content'][0]['text']
-        
-        # Parse the structured analysis
+
+        # Nova Lite returns under output.message.content
+        message_content = result.get("output", {}).get("message", {}).get("content", [])
+        if not message_content:
+            raise ValueError(f"No content in Bedrock response: {result}")
+
+        # Extract text segments
+        analysis_text_parts = [
+            c.get("text", "") for c in message_content if "text" in c
+        ]
+        analysis_text = "\n".join(analysis_text_parts)
+
+        # Parse to structured analysis
         analysis_results = parse_bedrock_response(analysis_text, correlation_id)
-        
+
         log_event(correlation_id, 'bedrock_analysis_complete', {
             'insights_generated': len(analysis_results.get('insights', [])),
             'anomalies_detected': len(analysis_results.get('anomalies', []))
         })
-        
+
         return analysis_results
-        
+
     except Exception as e:
         log_event(correlation_id, 'bedrock_error', {
             'error': str(e),
             'error_type': type(e).__name__
         }, level='ERROR')
-        
-        # Fallback to basic analysis if Bedrock fails
-        return perform_basic_analysis(data, correlation_id)
+        return None
 
 def prepare_data_summary(data: List[Dict]) -> Dict:
     """Prepare a summary of the data for analysis"""
@@ -361,52 +387,6 @@ def parse_bedrock_response(analysis_text: str, correlation_id: str) -> Dict:
             'summary': 'Analysis completed with parsing errors'
         }
 
-def perform_basic_analysis(data: List[Dict], correlation_id: str) -> Dict:
-    """Perform basic analysis as fallback"""
-    try:
-        data_summary = prepare_data_summary(data)
-        
-        insights = []
-        anomalies = []
-        recommendations = []
-        
-        # Basic insights
-        if data_summary.get('price_statistics'):
-            price_stats = data_summary['price_statistics']
-            insights.append({
-                'type': 'price_analysis',
-                'description': f"Average price: ${price_stats['avg']:.2f}, Range: ${price_stats['min']:.2f} - ${price_stats['max']:.2f}",
-                'confidence': 'high'
-            })
-        
-        # Check for high-value transactions
-        high_value_threshold = 1000
-        if data_summary.get('price_statistics', {}).get('max', 0) > high_value_threshold:
-            anomalies.append({
-                'type': 'high_value_transaction',
-                'description': f"High-value transaction detected: ${data_summary['price_statistics']['max']:.2f}",
-                'severity': 'medium'
-            })
-        
-        return {
-            'insights': insights,
-            'anomalies': anomalies,
-            'recommendations': recommendations,
-            'summary': f"Basic analysis completed for {len(data)} records"
-        }
-        
-    except Exception as e:
-        log_event(correlation_id, 'basic_analysis_error', {
-            'error': str(e)
-        }, level='ERROR')
-        
-        return {
-            'insights': [],
-            'anomalies': [],
-            'recommendations': [],
-            'summary': 'Analysis failed'
-        }
-
 def store_analysis_results(analysis_results: Dict, processed_file: str, 
                          source_file: str, records_count: int, correlation_id: str) -> str:
     """Store analysis results in DynamoDB"""
@@ -461,28 +441,43 @@ def publish_analysis_complete_event(analysis_id: str, analysis_results: Dict, co
             'anomalies_count': len(analysis_results.get('anomalies', [])),
             'high_value_anomalies': len(high_value_anomalies),
             'summary': analysis_results.get('summary', ''),
-            'notification_required': len(high_value_anomalies) > 0
+            'notification_required': len(high_value_anomalies) > 0 or len(analysis_results.get('insights', [])) > 0
         }
         
-        eventbridge_client.put_events(
+        # Publish event to EventBridge
+        response = eventbridge_client.put_events(
             Entries=[
                 {
                     'Source': 'madhu.data-processing',
                     'DetailType': 'Analysis Complete',
                     'Detail': json.dumps(event_detail),
-                    'EventBusName': EVENT_BUS_NAME
+                    'EventBusName': EVENT_BUS_NAME,
+                    'Time': datetime.utcnow()
                 }
             ]
         )
         
-        log_event(correlation_id, 'event_published', {
+        # Check if event was published successfully
+        failed_entries = response.get('FailedEntryCount', 0)
+        if failed_entries > 0:
+            log_event(correlation_id, 'analysis_event_publish_failed', {
+                'failed_entries': failed_entries,
+                'failures': response.get('Entries', [])
+            }, level='ERROR')
+            raise Exception(f"Failed to publish {failed_entries} events to EventBridge")
+        
+        log_event(correlation_id, 'analysis_event_published', {
             'event_type': 'Analysis Complete',
+            'event_bus': EVENT_BUS_NAME,
             'analysis_id': analysis_id,
-            'notification_required': event_detail['notification_required']
+            'notification_required': event_detail['notification_required'],
+            'event_id': response['Entries'][0].get('EventId') if response.get('Entries') else None
         })
         
     except Exception as e:
-        log_event(correlation_id, 'event_publish_error', {
+        log_event(correlation_id, 'analysis_event_publish_error', {
             'error': str(e),
+            'error_type': type(e).__name__,
+            'event_bus': EVENT_BUS_NAME,
             'analysis_id': analysis_id
-        }, level='WARNING')
+        }, level='ERROR')
