@@ -6,11 +6,11 @@ terraform {
       version = "~>6.2"
     }
   }
-  # backend "s3" {
-  #   bucket       = "madhu-terraform-state-bucket"
-  #   region       = "us-east-1"
-  #   encrypt      = true
-  #   use_lockfile = true
-  #   key          = "serverless-data-architecture/terraform.tfstate"
-  # }
+  backend "s3" {
+    bucket       = "madhu-terraform-state-bucket"
+    region       = "us-east-1"
+    encrypt      = true
+    use_lockfile = true
+    key          = "serverless-data-architecture/terraform.tfstate"
+  }
 }

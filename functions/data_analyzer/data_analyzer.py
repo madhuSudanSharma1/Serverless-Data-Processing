@@ -186,8 +186,7 @@ def download_processed_data(processed_file: str, correlation_id: str) -> List[Di
 def analyze_with_bedrock(data: List[Dict], correlation_id: str) -> Dict:
     """Analyze data using Amazon Bedrock (Nova Lite)"""
     try:
-        data_summary = prepare_data_summary(data)
-        prompt = create_analysis_prompt(data_summary)
+        prompt = create_analysis_prompt(data)
 
         log_event(correlation_id, 'calling_bedrock', {
             'model': BEDROCK_MODEL_ID,
@@ -250,66 +249,32 @@ def analyze_with_bedrock(data: List[Dict], correlation_id: str) -> Dict:
         }, level='ERROR')
         return None
 
-def prepare_data_summary(data: List[Dict]) -> Dict:
-    """Prepare a summary of the data for analysis"""
-    if not data:
-        return {}
+def create_analysis_prompt(data: List[Dict]) -> str:
+    """Create a prompt for Bedrock analysis using full data"""
     
-    # Calculate basic statistics
-    total_records = len(data)
-    brands = {}
-    regions = {}
-    price_values = []
-    
-    for record in data:
-        # Brand analysis
-        brand = record.get('brand', 'Unknown')
-        brands[brand] = brands.get(brand, 0) + 1
-        
-        # Region analysis
-        region = record.get('region', 'Unknown')
-        regions[region] = regions.get(region, 0) + 1
-        
-        # Price analysis
-        try:
-            price = float(record.get('price', 0))
-            price_values.append(price)
-        except (ValueError, TypeError):
-            continue
-    
-    # Calculate price statistics
-    price_stats = {}
-    if price_values:
-        price_stats = {
-            'min': min(price_values),
-            'max': max(price_values),
-            'avg': sum(price_values) / len(price_values),
-            'total': sum(price_values)
-        }
-    
-    return {
-        'total_records': total_records,
-        'top_brands': dict(sorted(brands.items(), key=lambda x: x[1], reverse=True)[:5]),
-        'regions': regions,
-        'price_statistics': price_stats,
-        'sample_records': data[:3] if len(data) > 3 else data
-    }
 
-def create_analysis_prompt(data_summary: Dict) -> str:
-    """Create a prompt for Bedrock analysis"""
+    max_records = 1000
+    if len(data) > max_records:
+        data = data[:max_records]
+    
+    data_json = json.dumps(data, indent=2)
+    
     return f"""
-Analyze the following smartphone sales data and provide insights in JSON format:
+You are a data analysis assistant.
 
-Data Summary:
-- Total Records: {data_summary.get('total_records', 0)}
-- Top Brands: {data_summary.get('top_brands', {})}
-- Regions: {data_summary.get('regions', {})}
-- Price Statistics: {data_summary.get('price_statistics', {})}
+Analyze the following smartphone sales dataset and provide insights in JSON format.
 
-Sample Records:
-{json.dumps(data_summary.get('sample_records', []), indent=2)}
+The dataset contains sales records with fields such as brand, region, and price. Your job is to:
+- Detect market trends (e.g., top brands, popular regions)
+- Identify pricing anomalies or irregularities
+- Suggest strategic recommendations (e.g., pricing, marketing, inventory)
+- Summarize key findings
 
-Please provide your analysis in the following JSON format:
+Here is the dataset:
+{data_json}
+
+Please respond ONLY with a JSON object in the following format:
+
 {{
   "insights": [
     {{
@@ -336,12 +301,14 @@ Please provide your analysis in the following JSON format:
 }}
 
 Focus on:
-1. Price trends and anomalies
-2. Regional sales patterns
-3. Brand performance
-4. Potential business opportunities
-5. Any unusual patterns in the data
+- Unusual or extreme prices
+- Brand and region performance
+- Business opportunities or risks
+- Unexpected patterns or gaps in the data
+
+Avoid explaining the JSON format. Only return the structured output.
 """
+
 
 def parse_bedrock_response(analysis_text: str, correlation_id: str) -> Dict:
     """Parse Bedrock response into structured format"""
