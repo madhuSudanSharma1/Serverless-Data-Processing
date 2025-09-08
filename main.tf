@@ -316,11 +316,11 @@ module "data_analyzer_lambda" {
   region          = local.region
 
   environment_variables = {
-    BUCKET_NAME      = module.data_processing_s3.bucket_name
-    DYNAMODB_TABLE   = module.analysis_dynamodb.table_name
-    REGION           = local.region
-    EVENT_BUS_NAME   = "madhu-data-processing-bus"
-    BEDROCK_MODEL_ID = var.bedrock_model_id
+    BUCKET_NAME        = module.data_processing_s3.bucket_name
+    DYNAMODB_TABLE     = module.analysis_dynamodb.table_name
+    REGION             = local.region
+    EVENT_BUS_NAME     = "madhu-data-processing-bus"
+    BEDROCK_MODEL_ID   = var.bedrock_model_id
     BEDROCK_MAX_TOKENS = var.bedrock_max_tokens
   }
 

@@ -7,7 +7,7 @@ variable "aws_region" {
 variable "from_email" {
   description = "Email address for SES"
   type        = string
-  
+
 }
 variable "to_email" {
   description = "Recipient email address for notifications"
@@ -17,7 +17,7 @@ variable "to_email" {
 variable "bedrock_model_id" {
   description = "Amazon Bedrock model ID to use for data analysis"
   type        = string
-  
+
 }
 variable "bedrock_max_tokens" {
   description = "Maximum tokens for Amazon Bedrock model response"
