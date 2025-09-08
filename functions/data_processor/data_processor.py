@@ -210,8 +210,6 @@ def publish_processing_complete_event(processed_files: Dict, source_file: str,
             'event_bus': EVENT_BUS_NAME,
             'source_file': source_file
         }, level='ERROR')
-        # Don't re-raise the exception as this shouldn't fail the main processing
-        # The file has been processed successfully, event publishing is secondary
 
 def log_event(correlation_id: str, event_type: str, details: Dict, level: str = 'INFO'):
     """Structured logging helper"""
