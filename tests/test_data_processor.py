@@ -3,8 +3,8 @@ import sys
 import os
 from unittest.mock import patch, MagicMock
 
-# Add the functions directory to the path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'functions'))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'functions', 'data_processor')))
+from data_processor import validate_smartphone_record, log_event, create_response
 
 from functions.data_processor.data_processor import validate_smartphone_record, log_event, create_response
 
