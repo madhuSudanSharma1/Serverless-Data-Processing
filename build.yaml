@@ -11,6 +11,7 @@ phases:
   pre_build:
     commands:
       - echo "Running terraform checks..."
+      - terraform init
       - terraform fmt -check
       - terraform validate
   build:
