@@ -3,8 +3,11 @@ import sys
 import os
 from unittest.mock import patch, MagicMock
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'functions', 'data_processor')))
-from data_processor import validate_smartphone_record, log_event, create_response
+# Add repo root (one level up from tests/) to sys.path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from functions.data_processor.data_processor import validate_smartphone_record, log_event, create_response
+
 
 from functions.data_processor.data_processor import validate_smartphone_record, log_event, create_response
 
