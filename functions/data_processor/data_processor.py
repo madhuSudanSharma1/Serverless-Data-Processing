@@ -5,10 +5,10 @@ import logging
 import os
 import hashlib
 from datetime import datetime
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Tuple
 import uuid
 from io import StringIO
-from botocore.exceptions import ClientError, NoCredentialsError
+from botocore.exceptions import ClientError
 import time
 
 # Configure structured logging
@@ -31,15 +31,7 @@ REGION = os.environ.get('REGION', 'us-east-1')
 EVENT_BUS_NAME = os.environ.get('EVENT_BUS_NAME', 'default')
 
 def lambda_handler(event, context):
-    """
-    Idempotent Lambda function to process uploaded CSV files from S3.
-    Validates smartphone sales data and separates valid/invalid records.
-    
-    Idempotency: Uses file hash and metadata to prevent duplicate processing.
-    Error Handling: Comprehensive error handling with structured logging.
-    Retries: Built-in retries for transient failures.
-    EventBridge: Publishes events to trigger next stage of processing.
-    """
+
     correlation_id = str(uuid.uuid4())
     
     try:
@@ -142,10 +134,7 @@ def lambda_handler(event, context):
 
 def publish_processing_complete_event(processed_files: Dict, source_file: str, 
                                     valid_count: int, invalid_count: int, correlation_id: str):
-    """
-    Publish processing complete event to EventBridge to trigger data analyzer.
-    Only publishes event if there are valid records to analyze.
-    """
+
     try:
         # Only trigger analysis if there are valid records
         if valid_count == 0:
@@ -212,7 +201,7 @@ def publish_processing_complete_event(processed_files: Dict, source_file: str,
         }, level='ERROR')
 
 def log_event(correlation_id: str, event_type: str, details: Dict, level: str = 'INFO'):
-    """Structured logging helper"""
+
     log_entry = {
         'timestamp': datetime.utcnow().isoformat(),
         'correlation_id': correlation_id,
@@ -229,7 +218,7 @@ def log_event(correlation_id: str, event_type: str, details: Dict, level: str = 
         logger.info(json.dumps(log_entry))
 
 def create_response(status_code: int, body: Dict) -> Dict:
-    """Create standardized Lambda response"""
+
     return {
         'statusCode': status_code,
         'body': json.dumps(body),
@@ -286,7 +275,7 @@ def is_already_processed(bucket_name: str, object_key: str, object_etag: str, co
         return False
 
 def process_csv_file_with_retry(bucket_name: str, object_key: str, correlation_id: str, max_retries: int = 3) -> Tuple[List[Dict], List[Dict]]:
-    """Process CSV file with retry logic for transient failures"""
+
     last_exception = None
     
     for attempt in range(max_retries):
@@ -328,10 +317,7 @@ def process_csv_file_with_retry(bucket_name: str, object_key: str, correlation_i
     raise last_exception
 
 def process_csv_file(bucket_name: str, object_key: str, correlation_id: str) -> Tuple[List[Dict], List[Dict]]:
-    """
-    Download and process CSV file from S3.
-    Returns tuple of (valid_records, invalid_records)
-    """
+
     try:
         # Download file from S3
         response = s3_client.get_object(Bucket=bucket_name, Key=object_key)
@@ -385,10 +371,7 @@ def process_csv_file(bucket_name: str, object_key: str, correlation_id: str) -> 
         raise
 
 def validate_smartphone_record(record: Dict, row_num: int) -> Dict:
-    """
-    Validate a smartphone sales record.
-    Returns dict with is_valid boolean and list of errors.
-    """
+
     errors = []
     
     # Required fields validation
@@ -459,7 +442,7 @@ def validate_smartphone_record(record: Dict, row_num: int) -> Dict:
 def upload_results_with_retry(bucket_name: str, original_key: str, valid_records: List[Dict], 
                             invalid_records: List[Dict], correlation_id: str, source_etag: str,
                             max_retries: int = 3) -> Dict:
-    """Upload results with retry logic"""
+
     last_exception = None
     
     for attempt in range(max_retries):
@@ -484,10 +467,7 @@ def upload_results_with_retry(bucket_name: str, original_key: str, valid_records
 
 def upload_results(bucket_name: str, original_key: str, valid_records: List[Dict], 
                   invalid_records: List[Dict], correlation_id: str, source_etag: str) -> Dict:
-    """
-    Upload processed and rejected records to appropriate S3 folders.
-    Returns dict with file information for idempotency tracking.
-    """
+
     timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
     base_filename = original_key.split('/')[-1].replace('.csv', '')
     result_files = {}
@@ -518,9 +498,7 @@ def upload_results(bucket_name: str, original_key: str, valid_records: List[Dict
 
 def upload_csv_to_s3(bucket_name: str, key: str, records: List[Dict], 
                     correlation_id: str, source_etag: str):
-    """
-    Upload list of records as CSV to S3 with metadata for idempotency.
-    """
+
     try:
         if not records:
             return
