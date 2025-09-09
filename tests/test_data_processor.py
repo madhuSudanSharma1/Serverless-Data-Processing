@@ -152,7 +152,7 @@ class TestDataProcessor(unittest.TestCase):
         self.assertFalse(result['is_valid'])
         self.assertTrue(any('Invalid region' in msg for msg in result['errors']))
     
-    @patch('data_processor.logger')
+    @patch('functions.data_processor.data_processor.logger')
     def test_log_event_info(self, mock_logger):
         """Test structured logging for info level"""
         correlation_id = 'test-123'
@@ -175,8 +175,8 @@ class TestDataProcessor(unittest.TestCase):
         self.assertEqual(parsed_log['key'], 'value')
         self.assertEqual(parsed_log['number'], 42)
         self.assertIn('timestamp', parsed_log)
-    
-    @patch('data_processor.logger')
+
+    @patch('functions.data_processor.data_processor.logger')
     def test_log_event_error(self, mock_logger):
         """Test structured logging for error level"""
         correlation_id = 'test-456'
