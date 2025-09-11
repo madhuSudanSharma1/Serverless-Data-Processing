@@ -260,15 +260,15 @@ def create_analysis_prompt(data: List[Dict]) -> str:
     data_json = json.dumps(data, indent=2)
     
     return f"""
-You are a data analysis assistant.
+You are a smartphone market analysis expert.
 
-Analyze the following smartphone sales dataset and provide insights in JSON format.
+Analyze the following smartphone sales dataset with focus on customer reviews and market segments. Provide insights in JSON format.
 
-The dataset contains sales records with fields such as brand, region, and price. Your job is to:
-- Detect market trends (e.g., top brands, popular regions)
-- Identify pricing anomalies or irregularities
-- Suggest strategic recommendations (e.g., pricing, marketing, inventory)
-- Summarize key findings
+The dataset contains sales records with fields including model, brand, price, customer_review, and region. Your job is to:
+- Analyze customer sentiment from reviews to identify most positively reviewed phones
+- Determine the most purchased/popular phone models based on sales frequency
+- Categorize phones into price segments: Budget (<$500), Mid-range ($500-$1000), Flagship (>$1000)
+- Provide targeted recommendations for each price segment
 
 Here is the dataset:
 {data_json}
@@ -278,33 +278,65 @@ Please respond ONLY with a JSON object in the following format:
 {{
   "insights": [
     {{
-      "type": "market_trend",
-      "description": "Description of the insight",
+      "type": "most_popular_phone",
+      "description": "The most frequently purchased phone model with sales count",
+      "confidence": "high/medium/low"
+    }},
+    {{
+      "type": "customer_satisfaction",
+      "description": "Analysis of customer reviews and satisfaction trends by brand/model",
+      "confidence": "high/medium/low"
+    }},
+    {{
+      "type": "price_segment_performance",
+      "description": "Performance analysis across budget, mid-range, and flagship segments",
       "confidence": "high/medium/low"
     }}
   ],
   "anomalies": [
     {{
-      "type": "price_anomaly",
-      "description": "Description of the anomaly",
+      "type": "review_anomaly",
+      "description": "Unusual patterns in customer reviews or satisfaction",
+      "severity": "high/medium/low"
+    }},
+    {{
+      "type": "price_anomaly", 
+      "description": "Phones with pricing that doesn't match their segment expectations",
       "severity": "high/medium/low"
     }}
   ],
   "recommendations": [
     {{
-      "category": "pricing/inventory/marketing",
-      "action": "Recommended action",
+      "category": "budget_segment",
+      "action": "Top 2 recommended budget phones (<$500) based on customer reviews and sales",
+      "priority": "high/medium/low"
+    }},
+    {{
+      "category": "midrange_segment", 
+      "action": "Top 2 recommended mid-range phones ($500-$1000) based on customer reviews and sales",
+      "priority": "high/medium/low"
+    }},
+    {{
+      "category": "flagship_segment",
+      "action": "Top 2 recommended flagship phones (>$1000) based on customer reviews and sales", 
+      "priority": "high/medium/low"
+    }},
+    {{
+      "category": "inventory_strategy",
+      "action": "Inventory recommendations based on popular models and positive reviews",
       "priority": "high/medium/low"
     }}
   ],
-  "summary": "Brief summary of key findings"
+  "summary": "Brief summary focusing on most popular phones, customer satisfaction trends, and segment-wise recommendations"
 }}
 
 Focus on:
-- Unusual or extreme prices
-- Brand and region performance
-- Business opportunities or risks
-- Unexpected patterns or gaps in the data
+- Customer review sentiment analysis to identify highly rated phones
+- Sales frequency to determine most popular models
+- Price segment analysis (Budget: <$500, Mid-range: $500-$1000, Flagship: >$1000)
+- Customer satisfaction patterns by brand and model
+- Regional preferences and trends
+- Value-for-money assessment based on price vs customer satisfaction
 
 Avoid explaining the JSON format. Only return the structured output.
 """

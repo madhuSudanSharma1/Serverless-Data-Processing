@@ -1,0 +1,101 @@
+order_id,date,model,brand,release_year,price,region,customer_review,ram,storage,color
+ORD1201,2024-11-15,Galaxy A35,Samsung,2024,329,Europe,Camera is decent for the price but performance can be sluggish with multiple apps. Battery lasts all day which is great.,6,128,Phantom Black
+ORD1202,2024-03-22,iPhone 15,Apple,2023,649,North America,Love the reliability and excellent camera but battery life could be better. Face ID works perfectly though.,6,128,Pink
+ORD1203,2024-09-08,GT 5 Pro,Realme,2024,449,Asia,Fast charging is amazing - 0 to 100% in 30 minutes! Camera quality is good but low light performance could be better.,8,256,Blue
+ORD1204,2024-01-17,Y100,Vivo,2024,249,Africa,Good value for money with decent camera. Performance is smooth for basic tasks but gaming can be laggy.,4,128,Gold
+ORD1205,2024-12-03,Magic 6 Pro,Honor,2024,749,Europe,Premium build quality and excellent display. Magic OS is improving but still not as polished as Samsung's One UI.,8,256,Silver
+ORD1206,2024-04-11,Galaxy S24 FE,Samsung,2024,699,Oceania,Solid performance and great camera but feels like a downgrade from flagship S24. One UI is fantastic though.,8,256,Phantom Silver
+ORD1207,2024-08-29,Redmi Note 13,Xiaomi,2024,329,South America,Excellent battery life and decent camera for the price. MIUI has too many ads which is annoying.,6,128,Green
+ORD1208,2024-06-14,Pixel 8a,Google,2024,549,North America,Pure Android experience is wonderful. Camera AI is impressive but phone can get warm during heavy usage.,8,256,Sage
+ORD1209,2024-10-07,Edge 50,Motorola,2024,649,Asia,Clean Android with useful Moto gestures. Performance is good but camera struggles in low light compared to competitors.,8,256,Cosmic Black
+ORD1210,2024-02-25,Find X7,Oppo,2024,899,Europe,Beautiful design and fast charging. ColorOS has improved significantly but camera app can be slow to launch.,12,512,Aurora
+ORD1211,2024-07-16,iPhone 15 Pro,Apple,2023,899,North America,iOS features are great and camera quality is excellent. Price is high but build quality justifies it.,8,256,Natural Titanium
+ORD1212,2024-05-03,Poco X6 Pro,Xiaomi,2024,549,Africa,Gaming performance is excellent with good cooling. POCO launcher is clean but phone feels plasticky.,8,256,Racing Blue
+ORD1213,2024-11-28,Nova 12,Huawei,2024,459,Asia,Good camera system and premium feel. Limited Google services is still a major drawback for many users.,8,256,Pearl White
+ORD1214,2024-03-09,GT 6,Realme,2024,599,South America,Excellent gaming phone with high refresh rate display. Design is attractive but software has occasional bugs.,8,256,Electric Yellow
+ORD1215,2024-09-21,Galaxy Z Fold6,Samsung,2024,1999,Europe,Incredible multitasking capabilities and S Pen support. Expensive but truly replaces my laptop for work.,16,1024,Phantom Green
+ORD1216,2024-01-06,V30,Vivo,2024,549,Oceania,Camera selfies are amazing and design is stylish. Performance is good but battery life could be better.,8,256,Sunset Orange
+ORD1217,2024-12-18,Mate 60 Pro,Huawei,2023,899,Asia,Excellent build quality and camera system. Lack of Google Play Store is still frustrating for app availability.,12,512,Space Black
+ORD1218,2024-04-27,C67,Realme,2024,229,Africa,Great budget phone with surprising camera quality. Performance is adequate but storage fills up quickly.,4,128,Dynamic Blue
+ORD1219,2024-08-13,iPhone SE (2022),Apple,2022,499,North America,Perfect size for one-handed use and reliable iOS experience. Camera is decent but lacks night mode.,6,128,Product Red
+ORD1220,2024-06-30,Edge 50 Pro,Motorola,2024,799,Europe,Premium Motorola with excellent display quality. Stock Android is great but camera processing needs improvement.,12,512,Vegan Leather
+ORD1221,2024-10-22,Pixel Fold,Google,2023,1899,North America,Google's best foldable yet with pure Android. Expensive but multitasking experience is fantastic.,12,512,Obsidian
+ORD1222,2024-02-14,14 Ultra,Xiaomi,2024,1099,Asia,Flagship performance with Leica cameras. MIUI is better than before but still has learning curve.,12,512,Ceramic White
+ORD1223,2024-07-04,V29,Vivo,2024,399,South America,Good mid-range option with decent camera. FunTouch OS is improving but still feels bloated.,6,256,Cosmic Blue
+ORD1224,2024-05-18,Magic V2,Honor,2023,1599,Europe,Impressive foldable with thin design when folded. MagicOS is smooth but app optimization needs work.,12,512,Titanium Silver
+ORD1225,2024-11-11,Galaxy A55,Samsung,2024,399,Africa,Reliable Samsung with One UI goodness. Performance is decent but camera could be better in low light.,6,128,Awesome Blue
+ORD1226,2024-03-26,Reno 11 Pro,Oppo,2024,549,Asia,Excellent portrait photography and fast charging. ColorOS is user-friendly but has some unnecessary features.,8,256,Starlight Gold
+ORD1227,2024-09-17,iPhone 16 Pro,Apple,2024,1099,Oceania,Pro camera features are incredible and build quality is top-notch. Battery life has improved significantly.,12,512,Black Titanium
+ORD1228,2024-01-31,Redmi Note 13 Pro,Xiaomi,2024,449,Europe,Great value with good camera and performance. MIUI ads are annoying but overall experience is solid.,8,256,Graphite Gray
+ORD1229,2024-12-09,Pura 70,Huawei,2024,949,North America,Leica cameras produce stunning photos. HarmonyOS is smooth but Google services absence is limiting.,12,512,Emerald Green
+ORD1230,2024-04-15,Poco X6,Xiaomi,2024,449,Africa,Excellent gaming performance for the price. Build quality feels premium but software could be cleaner.,8,256,Phantom Blue
+ORD1231,2024-08-06,Moto G84,Motorola,2023,379,South America,Clean Android experience with good battery life. Camera is average but performance is reliable.,6,256,Sage Green
+ORD1232,2024-06-22,Find N3,Oppo,2023,1399,Asia,Latest foldable with improved durability. ColorOS optimization for large screen is excellent.,12,512,Moonlight Silver
+ORD1233,2024-10-14,Magic 6,Honor,2024,949,Europe,Flagship performance with excellent camera system. Magic OS AI features are useful but sometimes intrusive.,12,512,Knight Black
+ORD1234,2024-02-28,Galaxy S24,Samsung,2024,899,North America,Solid flagship with great camera and display. One UI 6 is polished but phone can get warm during charging.,8,256,Phantom Black
+ORD1235,2024-07-23,V29e,Vivo,2024,649,Oceania,Camera quality is impressive especially for selfies. Performance is good but charging could be faster.,8,256,Aurora Blue
+ORD1236,2024-05-11,11 Pro,Realme,2024,499,Africa,Fast charging and good gaming performance. Realme UI is clean but lacks some customization options.,8,256,Racing Green
+ORD1237,2024-11-02,iPhone 15 Plus,Apple,2023,999,Asia,Large screen is perfect for media consumption. Battery life is excellent but camera bump is quite large.,8,512,Purple
+ORD1238,2024-03-18,Pixel 8 Pro,Google,2023,949,Europe,Computational photography is unmatched. Pure Android is smooth but battery optimization needs improvement.,12,512,Hazel
+ORD1239,2024-09-25,Edge 50 Neo,Motorola,2024,699,South America,Premium design with good performance. Moto gestures are intuitive but camera night mode is lacking.,8,256,Midnight Blue
+ORD1240,2024-01-12,Y36,Vivo,2024,299,North America,Good budget option with decent camera. Performance is adequate but storage management could be better.,4,128,Coral Pink
+ORD1241,2024-12-21,Mate 60,Huawei,2023,999,Africa,Excellent build quality and camera system. HarmonyOS is improving but app ecosystem is still limited.,12,512,Mystic Blue
+ORD1242,2024-04-08,Galaxy Z Flip6,Samsung,2024,799,Asia,Stylish foldable with improved durability. Cover screen is more functional but crease is still visible.,8,256,Bora Purple
+ORD1243,2024-08-19,13 Ultra,Xiaomi,2023,1199,Europe,Photography flagship with exceptional camera quality. MIUI 14 is cleaner but still has occasional stutters.,12,512,Leica Black
+ORD1244,2024-06-05,GT Neo5,Realme,2023,379,Oceania,Gaming-focused with good cooling system. Design is attractive but plastic build feels cheap.,6,256,Neon Green
+ORD1245,2024-10-28,Nova 11 Pro,Huawei,2023,599,South America,Good camera and premium design. Limited Google services remains a significant drawback.,8,256,Space Silver
+ORD1246,2024-02-19,iPhone SE (2022),Apple,2022,549,North America,Compact design with modern internals. Home button feels dated but Touch ID is reliable.,6,128,Midnight
+ORD1247,2024-07-11,Magic Vs2,Honor,2023,1699,Asia,Impressive foldable with good multitasking. MagicOS optimization is good but third-party app support varies.,16,512,Golden Black
+ORD1248,2024-05-24,Reno 11,Oppo,2024,429,Europe,Sleek design with fast charging capabilities. Camera is decent but performance can lag with heavy usage.,6,256,Starry Blue
+ORD1249,2024-11-16,X100 Pro,Vivo,2024,899,Africa,Camera-centric flagship with impressive zoom. Performance is flagship-level but price is quite high.,12,512,Professional Black
+ORD1250,2024-03-31,Moto G54,Motorola,2023,449,Oceania,Good mid-range option with clean Android. Build quality is solid but camera night mode needs improvement.,6,256,Charcoal Gray
+ORD1251,2024-09-03,Pixel 8 Pro,Google,2023,1199,North America,Large screen with incredible camera AI. Battery life is excellent but phone gets warm during intensive tasks.,12,512,Snow
+ORD1252,2024-01-26,C67,Realme,2024,279,Asia,Great budget phone with surprising performance. Camera is adequate but low-light photos are grainy.,4,128,Ocean Blue
+ORD1253,2024-12-14,iPhone 16 Pro,Apple,2024,1199,South America,Pro features justify the premium price. Camera quality is exceptional but iOS can feel restrictive.,12,512,White Titanium
+ORD1254,2024-04-21,Edge 50 Ultra,Motorola,2024,749,Europe,Premium Motorola with excellent display. Stock Android is great but wireless charging is slow.,8,512,Eclipse Black
+ORD1255,2024-08-07,V29 Pro,Vivo,2024,449,Africa,Good camera and stylish design. FunTouch OS has improved but still feels heavy compared to stock Android.,8,256,Gradient Blue
+ORD1256,2024-06-18,Galaxy S24+,Samsung,2024,1099,Oceania,Large flagship with excellent display and camera. One UI features are useful but can be overwhelming.,12,512,Phantom White
+ORD1257,2024-10-05,13,Xiaomi,2023,799,Asia,Flagship performance with good camera system. MIUI customization is extensive but can affect performance.,8,256,Sky Blue
+ORD1258,2024-02-11,Find X6,Oppo,2023,1099,North America,Premium flagship with fast charging and good camera. ColorOS is polished but lacks some stock Android simplicity.,12,512,Cosmic Black
+ORD1259,2024-07-30,Magic 5,Honor,2023,849,South America,Excellent build quality with good performance. Magic OS AI features are hit-or-miss in daily use.,8,512,Midnight Black
+ORD1260,2024-05-07,11 Pro+,Realme,2024,599,Europe,Fast charging and good gaming performance. Realme UI is improving but still lacks refinement of major brands.,8,512,Electric Blue
+ORD1261,2024-11-23,Mate 50 Pro,Huawei,2022,1199,Africa,Flagship with exceptional camera quality. HarmonyOS is smooth but limited app availability is frustrating.,16,512,Titanium Gray
+ORD1262,2024-03-16,Galaxy Z Fold5,Samsung,2023,2199,Asia,Revolutionary productivity device with S Pen. Expensive but truly replaces tablet for work tasks.,16,1024,Phantom Silver
+ORD1263,2024-09-12,iPhone 15 Pro Max,Apple,2023,1399,Oceania,Top-tier iPhone with incredible camera system. Battery life is excellent but price is very high.,12,1024,Deep Purple
+ORD1264,2024-01-04,Poco F5 Pro,Xiaomi,2023,649,Europe,Gaming phone with excellent cooling and display. POCO branding feels budget despite good performance.,8,512,Racing Red
+ORD1265,2024-12-27,V27,Vivo,2023,749,North America,Camera quality is impressive with good selfie features. Performance is solid but charging speed could be better.,8,512,Aurora Gold
+ORD1266,2024-04-14,Nova 11,Huawei,2023,659,South America,Good camera and premium build quality. Lack of Google Play Store limits app choices significantly.,8,256,Pearl Blue
+ORD1267,2024-08-21,GT 5,Realme,2023,699,Africa,Excellent gaming performance with RGB lighting. Design is eye-catching but build quality feels plasticky.,8,512,Cyber Silver
+ORD1268,2024-06-09,Magic V2,Honor,2023,1799,Asia,Premium foldable with excellent build quality. MagicOS foldable optimizations are impressive.,16,512,Space Black
+ORD1269,2024-10-17,Galaxy A54,Samsung,2023,459,Europe,Reliable mid-range Samsung with One UI. Performance is adequate but camera struggles in challenging conditions.,6,256,Awesome Black
+ORD1270,2024-02-23,Edge 40 Neo,Motorola,2023,549,Oceania,Good mid-range option with clean Android experience. Build quality is solid but camera processing is slow.,6,256,Frosted Blue
+ORD1271,2024-07-08,Reno 10 Pro,Oppo,2023,649,North America,Excellent portrait photography and fast charging. ColorOS customization is extensive but can be confusing.,8,512,Sunset Gold
+ORD1272,2024-05-20,iPhone SE (2022),Apple,2022,599,Africa,Compact iPhone with modern performance. Battery life is limited but iOS experience is smooth.,6,256,Starlight
+ORD1273,2024-11-06,12T Pro,Xiaomi,2022,1099,Asia,Flagship with Leica cameras and premium materials. MIUI ads and bloatware detract from premium experience.,12,512,Ceramic Black
+ORD1274,2024-03-28,Y27,Vivo,2023,349,South America,Decent budget option with adequate performance. Camera is okay but build quality feels cheap.,4,128,Mystic Pink
+ORD1275,2024-09-20,Pixel 7 Pro,Google,2022,899,Europe,Pure Android with excellent computational photography. Battery life has improved but wireless charging is slow.,8,512,Sorta Sage
+ORD1276,2024-01-18,C55,Realme,2023,329,Oceania,Good value budget phone with decent camera. Performance is adequate but software could be more polished.,4,256,Ocean Green
+ORD1277,2024-12-05,Magic 4,Honor,2022,949,North America,Premium flagship with excellent camera and build. Magic OS features are useful but learning curve is steep.,12,512,Honor Silver
+ORD1278,2024-04-30,Find X5,Oppo,2022,1199,Africa,Top-tier flagship with fast charging and camera. ColorOS has matured but still lacks stock Android simplicity.,12,1024,Space Silver
+ORD1279,2024-08-14,Galaxy S23,Samsung,2023,999,Asia,Latest Samsung flagship with improved camera AI. One UI 5 is polished but phone gets warm during gaming.,8,512,Phantom Pink
+ORD1280,2024-06-26,Edge 40,Motorola,2023,849,Europe,Premium Motorola with excellent display quality. Stock Android is appreciated but camera needs better processing.,8,512,Midnight Black
+ORD1281,2024-10-09,iPhone 14,Apple,2022,999,South America,Latest iPhone with improved efficiency and camera. iOS features are great but price increase is significant.,8,512,Blue
+ORD1282,2024-02-15,Poco F5,Xiaomi,2023,749,Oceania,High-performance gaming phone with good cooling. POCO UI is clean but build quality could be more premium.,8,512,Electric Green
+ORD1283,2024-07-27,V25,Vivo,2022,849,North America,Camera-focused flagship with impressive selfie quality. Performance is good but software could be cleaner.,12,512,Professional Blue
+ORD1284,2024-05-13,10 Pro,Realme,2023,699,Africa,Fast charging and good gaming performance. Realme UI improvements are noticeable but still not perfect.,8,512,Lightning Yellow
+ORD1285,2024-11-30,Mate 50,Huawei,2022,1399,Asia,Flagship with exceptional camera and build quality. HarmonyOS ecosystem is growing but still limited.,16,1024,Space Gray
+ORD1286,2024-03-05,Galaxy Z Flip5,Samsung,2023,899,Europe,Stylish foldable with improved durability and features. Cover screen functionality has expanded significantly.,8,512,Phantom Black
+ORD1287,2024-09-28,Nova 10 Pro,Huawei,2022,699,Oceania,Good camera system with premium design. Google services limitation remains major concern for users.,8,512,Aurora Purple
+ORD1288,2024-01-21,GT Neo3,Realme,2022,799,North America,Gaming flagship with RGB lighting and cooling. Performance is excellent but design may be too flashy.,12,512,Cyber Blue
+ORD1289,2024-12-18,Magic Vs,Honor,2022,1899,South America,Premium foldable with excellent multitasking capabilities. MagicOS optimization for foldables is impressive.,16,1024,Golden Silver
+ORD1290,2024-04-06,iPhone 14 Plus,Apple,2022,1199,Africa,Large iPhone with excellent battery life and camera. iOS ecosystem integration is seamless but price is high.,8,1024,Natural Titanium
+ORD1291,2024-08-02,V23,Vivo,2022,549,Asia,Mid-range with good camera and design. FunTouch OS has improved but still feels bloated compared to competition.,8,256,Cosmic Purple
+ORD1292,2024-06-19,Pixel 7 Pro,Google,2022,1099,Europe,Computational photography excellence with pure Android. Battery optimization has improved but camera bar is large.,12,1024,Cloudy White
+ORD1293,2024-10-26,12,Xiaomi,2022,899,Oceania,Flagship performance with Leica partnership. MIUI refinements are good but ads remain annoying.,8,512,Midnight Blue
+ORD1294,2024-02-08,Edge 30,Motorola,2022,949,North America,Premium Motorola with flagship features. Stock Android experience is clean but camera needs improvement.,12,512,Eclipse Silver
+ORD1295,2024-07-15,Reno 8 Pro,Oppo,2022,749,South America,Excellent portrait photography with fast charging. ColorOS is user-friendly but lacks customization depth.,8,512,Starlight Silver
+ORD1296,2024-05-01,Galaxy A34,Samsung,2023,499,Africa,Reliable Samsung with One UI features. Performance is decent but camera quality varies in different lighting.,6,256,Awesome Purple
+ORD1297,2024-11-14,C53,Realme,2023,379,Asia,Good budget option with decent performance. Build quality is acceptable but camera struggles in low light.,4,256,Dynamic Green
+ORD1298,2024-03-23,Find X3,Oppo,2021,1299,Europe,Flagship with premium build and fast charging. ColorOS maturity is evident but stock Android would be preferred.,12,1024,Cosmic Gold
+ORD1299,2024-09-06,Magic 3,Honor,2021,1049,Oceania,Excellent flagship with AI features and camera. Magic OS learning curve exists but features are genuinely useful.,12,1024,Knight Silver
+ORD1300,2024-01-15,iPhone 13 Pro,Apple,2021,1299,North America,Pro iPhone with incredible camera and build quality. iOS features are excellent but premium price is steep.,12,1024,Alpine Green
