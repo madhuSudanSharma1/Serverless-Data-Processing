@@ -291,7 +291,7 @@ module "data_processor_lambda" {
   runtime         = "python3.11"
   timeout         = 300
   # lambda_role_arn = module.data_processor_lambda_role.role_arn
-  region          = local.region
+  region = local.region
 
   environment_variables = {
     BUCKET_NAME    = module.data_processing_s3.bucket_name
