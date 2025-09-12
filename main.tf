@@ -375,4 +375,22 @@ resource "aws_s3_bucket_notification" "data_processing_notification" {
   depends_on = [aws_lambda_permission.allow_s3_invoke]
 }
 
+resource "aws_cloudwatch_metric_alarm" "lambda_error_alarm" {
+  alarm_name          = "Madhu_LambdaErrorAlarm"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "Errors"
+  namespace           = "AWS/Lambda"
+  period              = 60
+  statistic           = "Sum"
+  threshold           = 1
+  alarm_description   = "Alarm when Lambda function fails"
+
+  dimensions = {
+    FunctionName = module.data_processor_lambda.lambda_function_name
+  }
+
+  treat_missing_data = "notBreaching"
+}
+
 
