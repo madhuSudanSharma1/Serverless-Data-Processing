@@ -127,19 +127,19 @@ module "data_processor_lambda_role" {
   inline_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
-      # {
-      #   Effect = "Allow"
-      #   Action = [
-      #     "s3:GetObject",
-      #     "s3:PutObject",
-      #     "s3:DeleteObject",
-      #     "s3:ListBucket"
-      #   ]
-      #   Resource = [
-      #     "${module.data_processing_s3.bucket_arn}",
-      #     "${module.data_processing_s3.bucket_arn}/*"
-      #   ]
-      # },
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          "${module.data_processing_s3.bucket_arn}",
+          "${module.data_processing_s3.bucket_arn}/*"
+        ]
+      },
       {
         Effect = "Allow"
         Action = [
