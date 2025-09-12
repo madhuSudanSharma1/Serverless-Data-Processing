@@ -375,6 +375,19 @@ resource "aws_s3_bucket_notification" "data_processing_notification" {
   depends_on = [aws_lambda_permission.allow_s3_invoke]
 }
 
+# SNS Topic
+resource "aws_sns_topic" "lambda_alerts" {
+  name = "madhu-lambda-error-alerts"
+  tags = local.tags
+}
+
+# SNS Topic subscription
+resource "aws_sns_topic_subscription" "lambda_alerts_email" {
+  topic_arn = aws_sns_topic.lambda_alerts.arn
+  protocol  = "email"
+  endpoint  = var.alert_email
+}
+
 resource "aws_cloudwatch_metric_alarm" "lambda_error_alarm" {
   alarm_name          = "Madhu_LambdaErrorAlarm"
   comparison_operator = "GreaterThanOrEqualToThreshold"
@@ -385,7 +398,7 @@ resource "aws_cloudwatch_metric_alarm" "lambda_error_alarm" {
   statistic           = "Sum"
   threshold           = 1
   alarm_description   = "Alarm when Lambda function fails"
-
+  alarm_actions       = [aws_sns_topic.lambda_alerts.arn]
   dimensions = {
     FunctionName = module.data_processor_lambda.lambda_function_name
   }

@@ -24,3 +24,7 @@ variable "bedrock_max_tokens" {
   type        = number
   default     = 2000
 }
+variable "alert_email" {
+  description = "Email address for sending alerts"
+  type        = string
+}
