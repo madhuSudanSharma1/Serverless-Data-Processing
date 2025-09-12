@@ -1,0 +1,26 @@
+name: Auto PR from UAT to DEV
+
+on:
+  push:
+    branches:
+      - uat
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.PAT_GITHUB }}
+          base: dev   
+          branch: uat 
+          title: "Auto PR: Sync UAT → DEV"
+          body: |
+            This PR was automatically created to merge changes from `uat` into `dev`.
+          labels: |
+            auto-pr
