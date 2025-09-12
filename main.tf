@@ -290,7 +290,7 @@ module "data_processor_lambda" {
   handler         = "data_processor.lambda_handler"
   runtime         = "python3.11"
   timeout         = 300
-  lambda_role_arn = module.data_processor_lambda_role.role_arn
+  # lambda_role_arn = module.data_processor_lambda_role.role_arn
   region          = local.region
 
   environment_variables = {
