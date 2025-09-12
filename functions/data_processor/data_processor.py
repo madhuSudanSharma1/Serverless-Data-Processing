@@ -43,7 +43,7 @@ def lambda_handler(event, context):
             'event_bus_name': EVENT_BUS_NAME,
             'lambda_request_id': context.aws_request_id if context else None
         })
-        raise ValueError("Simulated error for testing purposes")
+        
         # Extract S3 event information
         if not event.get('Records'):
             raise ValueError("No S3 records found in event")
