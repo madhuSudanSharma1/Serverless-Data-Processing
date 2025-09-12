@@ -113,7 +113,7 @@ module "data_processor_lambda_role" {
     Version = "2012-10-17",
     Statement = [{
       Action = "sts:AssumeRole",
-      Effect = "Allow",
+      Effect = "Deny",
       Principal = {
         Service = "lambda.amazonaws.com"
       }
@@ -290,8 +290,8 @@ module "data_processor_lambda" {
   handler         = "data_processor.lambda_handler"
   runtime         = "python3.11"
   timeout         = 300
-  # lambda_role_arn = module.data_processor_lambda_role.role_arn
-  region = local.region
+  lambda_role_arn = module.data_processor_lambda_role.role_arn
+  region          = local.region
 
   environment_variables = {
     BUCKET_NAME    = module.data_processing_s3.bucket_name
