@@ -35,7 +35,7 @@ jobs:
       - name: Create Pull Request
         if: steps.check_diff.outputs.commits != '0'
         env:
-          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
         run: |
           gh pr create \
             --base dev \
