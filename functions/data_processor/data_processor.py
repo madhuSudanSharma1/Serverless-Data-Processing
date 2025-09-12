@@ -43,7 +43,7 @@ def lambda_handler(event, context):
             'event_bus_name': EVENT_BUS_NAME,
             'lambda_request_id': context.aws_request_id if context else None
         })
-        
+        raise ValueError("Simulated error for testing purposes")
         # Extract S3 event information
         if not event.get('Records'):
             raise ValueError("No S3 records found in event")
@@ -234,9 +234,7 @@ def is_already_processed(bucket_name: str, object_key: str, object_etag: str, co
     """
     try:
         base_filename = object_key.split('/')[-1].replace('.csv', '')
-        if base_filename == 'bad':
-            raise Exception("Intentional test error for CloudWatch alert")
-    
+        
         # Check if processed files exist with matching source metadata
         processed_prefix = f"processed/{base_filename}_processed_"
         rejected_prefix = f"rejected/{base_filename}_rejected_"
