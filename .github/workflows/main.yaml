@@ -10,12 +10,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout uat branch and fetch all history and tags
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0  
-        ref: uat        
-
+      - name: Checkout uat branch and fetch all history and tags
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  
+          ref: uat        
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
