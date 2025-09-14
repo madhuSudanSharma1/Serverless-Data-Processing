@@ -32,3 +32,13 @@ variable "region" {
   type        = string
   default     = null
 }
+variable "enable_sse" {
+  description = "Enable server-side encryption for the S3 bucket"
+  type        = bool
+  default     = false
+}
+variable "enable_lifecycle" {
+  description = "Enable lifecycle rules for the S3 bucket"
+  type        = bool
+  default     = false
+}

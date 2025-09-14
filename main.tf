@@ -10,6 +10,8 @@ module "data_processing_s3" {
   versioning_enabled         = true
   allow_access_from_anywhere = false
   region                     = local.region
+  enable_sse                 = true
+  enable_lifecycle           = true
 }
 
 # DynamoDB for analysis results
