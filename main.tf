@@ -10,6 +10,8 @@ module "data_processing_s3" {
   versioning_enabled         = true
   allow_access_from_anywhere = false
   region                     = local.region
+  enable_sse                 = true
+  enable_lifecycle           = true
 }
 
 # DynamoDB for analysis results
@@ -127,19 +129,19 @@ module "data_processor_lambda_role" {
   inline_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
-      # {
-      #   Effect = "Allow"
-      #   Action = [
-      #     "s3:GetObject",
-      #     "s3:PutObject",
-      #     "s3:DeleteObject",
-      #     "s3:ListBucket"
-      #   ]
-      #   Resource = [
-      #     "${module.data_processing_s3.bucket_arn}",
-      #     "${module.data_processing_s3.bucket_arn}/*"
-      #   ]
-      # },
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          "${module.data_processing_s3.bucket_arn}",
+          "${module.data_processing_s3.bucket_arn}/*"
+        ]
+      },
       {
         Effect = "Allow"
         Action = [

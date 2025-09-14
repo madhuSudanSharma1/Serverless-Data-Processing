@@ -56,11 +56,6 @@ def convert_decimals(obj):
         return obj
 
 def lambda_handler(event, context):
-    """
-    Lambda function to send email notifications about analysis results.
-    Triggered by EventBridge when analysis is complete.
-    Fetches analysis results from DynamoDB and sends formatted email via SES.
-    """
     correlation_id = str(uuid.uuid4())
     
     try:
@@ -82,14 +77,12 @@ def lambda_handler(event, context):
             insights_count = detail.get('insights_count', 0)
             anomalies_count = detail.get('anomalies_count', 0)
             high_value_anomalies = detail.get('high_value_anomalies', 0)
-            notification_required = detail.get('notification_required', False)
         else:
             # Direct invocation or test event
             analysis_id = event.get('analysis_id')
             insights_count = event.get('insights_count', 0)
             anomalies_count = event.get('anomalies_count', 0)
             high_value_anomalies = event.get('high_value_anomalies', 0)
-            notification_required = event.get('notification_required', True)
         
         if not analysis_id:
             log_event(correlation_id, 'no_analysis_id', {
@@ -189,7 +182,6 @@ def create_response(status_code: int, body: Dict) -> Dict:
     }
 
 def get_analysis_details(analysis_id: str, correlation_id: str) -> Optional[Dict]:
-    """Retrieve complete analysis details from DynamoDB with Decimal handling"""
     try:
         table = dynamodb.Table(DYNAMODB_TABLE)
         
@@ -235,15 +227,13 @@ def send_email_notification(analysis_details: Dict, correlation_id: str) -> bool
         # Generate email content
         subject = generate_email_subject(analysis_details)
         html_body = generate_html_email_body(analysis_details)
-        text_body = generate_text_email_body(analysis_details)
         
         log_event(correlation_id, 'sending_email', {
             'analysis_id': analysis_details.get('analysis_id'),
             'from_email': FROM_EMAIL,
             'to_email': TO_EMAIL,
             'subject': subject,
-            'html_body_length': len(html_body),
-            'text_body_length': len(text_body)
+            'html_body_length': len(html_body)
         })
         
         # Validate email addresses
@@ -262,10 +252,6 @@ def send_email_notification(analysis_details: Dict, correlation_id: str) -> bool
                     'Charset': 'UTF-8'
                 },
                 'Body': {
-                    'Text': {
-                        'Data': text_body,
-                        'Charset': 'UTF-8'
-                    },
                     'Html': {
                         'Data': html_body,
                         'Charset': 'UTF-8'
@@ -304,7 +290,6 @@ def generate_email_subject(analysis_details: Dict) -> str:
     """Generate email subject line based on analysis results"""
     analysis_id = analysis_details.get('analysis_id', 'Unknown')
     anomalies_count = len(analysis_details.get('anomalies', []))
-    insights_count = len(analysis_details.get('insights', []))
     
     # Check for high severity anomalies
     high_severity_anomalies = [
@@ -481,100 +466,6 @@ def generate_html_email_body(analysis_details: Dict) -> str:
     
     return html_body
 
-def generate_text_email_body(analysis_details: Dict) -> str:
-    """Generate plain text email body as fallback"""
-    # Ensure no Decimals in the data
-    analysis_details = convert_decimals(analysis_details)
-    
-    analysis_id = analysis_details.get('analysis_id', 'Unknown')
-    correlation_id = analysis_details.get('correlation_id', 'Unknown')
-    source_file = analysis_details.get('source_file', 'Unknown')
-    records_analyzed = analysis_details.get('records_analyzed', 0)
-    analysis_timestamp = analysis_details.get('analysis_timestamp', datetime.utcnow().isoformat())
-    summary = str(analysis_details.get('summary', 'No summary available'))
-    
-    insights = analysis_details.get('insights', [])
-    anomalies = analysis_details.get('anomalies', [])
-    recommendations = analysis_details.get('recommendations', [])
-    
-    # Determine status
-    high_severity_anomalies = [a for a in anomalies if a.get('severity', '').lower() == 'high']
-    status = "HIGH PRIORITY" if high_severity_anomalies else "ATTENTION NEEDED" if anomalies else "NORMAL"
-    
-    text_body = f"""
-{EMAIL_SUBJECT_PREFIX.upper()}
-{'=' * len(EMAIL_SUBJECT_PREFIX)}
-
-Status: {status}
-Analysis ID: {analysis_id}
-Correlation ID: {correlation_id}
-
-SUMMARY
--------
-{summary}
-
-STATISTICS
-----------
-• Insights Generated: {len(insights)}
-• Anomalies Detected: {len(anomalies)}
-• Records Analyzed: {records_analyzed:,}
-
-"""
-    
-    # Add insights
-    if insights:
-        text_body += f"""
-KEY INSIGHTS ({len(insights)})
-{'-' * 20}
-"""
-        for i, insight in enumerate(insights, 1):
-            insight_type = str(insight.get('type', 'General')).replace('_', ' ').title()
-            description = str(insight.get('description', 'No description'))
-            confidence = str(insight.get('confidence', 'medium')).upper()
-            
-            text_body += f"{i}. {insight_type} ({confidence})\n   {description}\n\n"
-    
-    # Add anomalies
-    if anomalies:
-        text_body += f"""
-ANOMALIES DETECTED ({len(anomalies)})
-{'-' * 25}
-"""
-        for i, anomaly in enumerate(anomalies, 1):
-            anomaly_type = str(anomaly.get('type', 'General')).replace('_', ' ').title()
-            description = str(anomaly.get('description', 'No description'))
-            severity = str(anomaly.get('severity', 'medium')).upper()
-            
-            text_body += f"{i}. {anomaly_type} ({severity})\n   {description}\n\n"
-    
-    # Add recommendations
-    if recommendations:
-        text_body += f"""
-RECOMMENDATIONS ({len(recommendations)})
-{'-' * 20}
-"""
-        for i, rec in enumerate(recommendations, 1):
-            category = str(rec.get('category', 'General')).title()
-            action = str(rec.get('action', 'No action specified'))
-            priority = str(rec.get('priority', 'medium')).upper()
-            
-            text_body += f"{i}. {category} ({priority})\n   {action}\n\n"
-    
-    # Add metadata
-    text_body += f"""
-ANALYSIS METADATA
------------------
-Source File: {source_file}
-Analysis Timestamp: {analysis_timestamp}
-Generated: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}
-
----
-This is an automated notification from the Serverless Data Processing Pipeline.
-For questions or support, please contact the data team.
-    """
-    
-    return text_body
-
 def mark_notification_sent(analysis_id: str, correlation_id: str):
     """Update DynamoDB record to mark notification as sent"""
     try:
@@ -599,4 +490,3 @@ def mark_notification_sent(analysis_id: str, correlation_id: str):
             'error': str(e),
             'analysis_id': analysis_id
         }, level='WARNING')
-        # Don't raise exception as this is not critical
