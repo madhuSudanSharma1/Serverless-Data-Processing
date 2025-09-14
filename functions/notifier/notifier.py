@@ -9,7 +9,6 @@ from botocore.exceptions import ClientError
 from decimal import Decimal
 import html
 
-# Configure structured logging
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
@@ -17,17 +16,10 @@ logger.setLevel(logging.INFO)
 dynamodb = boto3.resource('dynamodb')
 ses_client = boto3.client('ses')
 
-# Environment variables
 DYNAMODB_TABLE = os.environ.get('DYNAMODB_TABLE')
 REGION = os.environ.get('REGION', 'us-east-1')
 FROM_EMAIL = os.environ.get('FROM_EMAIL')
 TO_EMAIL = os.environ.get('TO_EMAIL')
-
-# Email configuration from environment variables
-EMAIL_SUBJECT_PREFIX = os.environ.get('EMAIL_SUBJECT_PREFIX', 'Data Analysis Report')
-EMAIL_PRIORITY_ICON = os.environ.get('EMAIL_PRIORITY_ICON', '🚨')
-EMAIL_WARNING_ICON = os.environ.get('EMAIL_WARNING_ICON', '⚠️')
-EMAIL_SUCCESS_ICON = os.environ.get('EMAIL_SUCCESS_ICON', '✅')
 
 class DecimalEncoder(json.JSONEncoder):
     """Custom JSON encoder to handle Decimal objects from DynamoDB"""
@@ -41,7 +33,6 @@ class DecimalEncoder(json.JSONEncoder):
         return super(DecimalEncoder, self).default(obj)
 
 def convert_decimals(obj):
-    """Recursively convert Decimal objects to int/float in nested structures"""
     if isinstance(obj, list):
         return [convert_decimals(item) for item in obj]
     elif isinstance(obj, dict):
@@ -78,20 +69,10 @@ def lambda_handler(event, context):
             anomalies_count = detail.get('anomalies_count', 0)
             high_value_anomalies = detail.get('high_value_anomalies', 0)
         else:
-            # Direct invocation or test event
-            analysis_id = event.get('analysis_id')
-            insights_count = event.get('insights_count', 0)
-            anomalies_count = event.get('anomalies_count', 0)
-            high_value_anomalies = event.get('high_value_anomalies', 0)
-        
+            raise ValueError("Invalid event format: 'detail' key not found")
+                
         if not analysis_id:
-            log_event(correlation_id, 'no_analysis_id', {
-                'message': 'No analysis ID provided, cannot send notification'
-            }, level='WARNING')
-            return create_response(400, {
-                'message': 'Analysis ID is required',
-                'correlation_id': correlation_id
-            })
+            raise ValueError("Analysis ID not found in event detail")
         
         log_event(correlation_id, 'processing_notification', {
             'analysis_id': analysis_id,
@@ -104,21 +85,12 @@ def lambda_handler(event, context):
         analysis_details = get_analysis_details(analysis_id, correlation_id)
         
         if not analysis_details:
-            log_event(correlation_id, 'analysis_not_found', {
-                'message': 'Analysis not found in database',
-                'analysis_id': analysis_id
-            }, level='WARNING')
-            return create_response(404, {
-                'message': 'Analysis not found',
-                'analysis_id': analysis_id,
-                'correlation_id': correlation_id
-            })
+            raise ValueError("Analysis record not found")
         
         # Send email notification
         email_sent = send_email_notification(analysis_details, correlation_id)
         
         if email_sent:
-            # Update DynamoDB to mark notification as sent
             mark_notification_sent(analysis_id, correlation_id)
             
             log_event(correlation_id, 'notification_sent_successfully', {
@@ -135,11 +107,7 @@ def lambda_handler(event, context):
                 'email_sent_to': TO_EMAIL
             })
         else:
-            return create_response(500, {
-                'message': 'Failed to send email notification',
-                'analysis_id': analysis_id,
-                'correlation_id': correlation_id
-            })
+            raise Exception("Failed to send email notification")
         
     except Exception as e:
         log_event(correlation_id, 'notification_error', {
@@ -203,11 +171,7 @@ def get_analysis_details(analysis_id: str, correlation_id: str) -> Optional[Dict
             
             return analysis_data
         else:
-            log_event(correlation_id, 'analysis_not_found_in_db', {
-                'analysis_id': analysis_id,
-                'table': DYNAMODB_TABLE
-            }, level='WARNING')
-            return None
+            raise ValueError("Analysis record not found")
             
     except Exception as e:
         log_event(correlation_id, 'dynamodb_retrieval_error', {
@@ -219,9 +183,8 @@ def get_analysis_details(analysis_id: str, correlation_id: str) -> Optional[Dict
         return None
 
 def send_email_notification(analysis_details: Dict, correlation_id: str) -> bool:
-    """Send formatted email notification using Amazon SES"""
     try:
-        # Ensure analysis_details doesn't contain Decimals
+        # Convert Decimals to int/float because json.dumps cannot handle Decimals directly
         analysis_details = convert_decimals(analysis_details)
         
         # Generate email content
@@ -236,11 +199,9 @@ def send_email_notification(analysis_details: Dict, correlation_id: str) -> bool
             'html_body_length': len(html_body)
         })
         
-        # Validate email addresses
         if not FROM_EMAIL or not TO_EMAIL:
             raise ValueError("FROM_EMAIL and TO_EMAIL must be configured")
-        
-        # Send email via SES
+
         response = ses_client.send_email(
             Source=FROM_EMAIL,
             Destination={
@@ -269,15 +230,6 @@ def send_email_notification(analysis_details: Dict, correlation_id: str) -> bool
         
         return True
         
-    except ClientError as e:
-        error_code = e.response.get('Error', {}).get('Code', '')
-        log_event(correlation_id, 'ses_client_error', {
-            'error': str(e),
-            'error_code': error_code,
-            'from_email': FROM_EMAIL,
-            'to_email': TO_EMAIL
-        }, level='ERROR')
-        return False
     except Exception as e:
         log_event(correlation_id, 'email_send_error', {
             'error': str(e),
@@ -287,7 +239,7 @@ def send_email_notification(analysis_details: Dict, correlation_id: str) -> bool
         return False
 
 def generate_email_subject(analysis_details: Dict) -> str:
-    """Generate email subject line based on analysis results"""
+
     analysis_id = analysis_details.get('analysis_id', 'Unknown')
     anomalies_count = len(analysis_details.get('anomalies', []))
     
@@ -298,14 +250,13 @@ def generate_email_subject(analysis_details: Dict) -> str:
     ]
     
     if high_severity_anomalies:
-        return f"{EMAIL_PRIORITY_ICON} ALERT: {EMAIL_SUBJECT_PREFIX} - High Priority Anomalies Detected ({analysis_id})"
+        return f"ALERT: Data Analysis Report - High Priority Anomalies Detected ({analysis_id})"
     elif anomalies_count > 0:
-        return f"{EMAIL_WARNING_ICON} {EMAIL_SUBJECT_PREFIX} - Anomalies Detected ({analysis_id})"
+        return f"Data Analysis Report - Anomalies Detected ({analysis_id})"
     else:
-        return f"{EMAIL_SUCCESS_ICON} {EMAIL_SUBJECT_PREFIX} - All Normal ({analysis_id})"
+        return f"Data Analysis Report - All Normal ({analysis_id})"
 
 def generate_html_email_body(analysis_details: Dict) -> str:
-    """Generate HTML email body with formatted analysis results"""
     # Ensure no Decimals in the data
     analysis_details = convert_decimals(analysis_details)
     
@@ -323,7 +274,6 @@ def generate_html_email_body(analysis_details: Dict) -> str:
     
     # Determine status and priority
     high_severity_anomalies = [a for a in anomalies if a.get('severity', '').lower() == 'high']
-    status_icon = EMAIL_PRIORITY_ICON if high_severity_anomalies else EMAIL_WARNING_ICON if anomalies else EMAIL_SUCCESS_ICON
     status_text = "HIGH PRIORITY" if high_severity_anomalies else "ATTENTION NEEDED" if anomalies else "NORMAL"
     status_color = "#dc3545" if high_severity_anomalies else "#ffc107" if anomalies else "#28a745"
     
@@ -332,7 +282,7 @@ def generate_html_email_body(analysis_details: Dict) -> str:
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>{EMAIL_SUBJECT_PREFIX}</title>
+    <title>Data Analysis Report</title>
     <style>
         body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
         .container {{ max-width: 800px; margin: 0 auto; padding: 20px; }}
@@ -356,7 +306,7 @@ def generate_html_email_body(analysis_details: Dict) -> str:
 <body>
     <div class="container">
         <div class="header">
-            <h1>{status_icon} {EMAIL_SUBJECT_PREFIX}</h1>
+            <h1>Data Analysis Report</h1>
             <h2>Status: {status_text}</h2>
             <p>Analysis ID: {analysis_id}</p>
         </div>
@@ -467,7 +417,6 @@ def generate_html_email_body(analysis_details: Dict) -> str:
     return html_body
 
 def mark_notification_sent(analysis_id: str, correlation_id: str):
-    """Update DynamoDB record to mark notification as sent"""
     try:
         table = dynamodb.Table(DYNAMODB_TABLE)
         
@@ -479,11 +428,7 @@ def mark_notification_sent(analysis_id: str, correlation_id: str):
                 ':timestamp': datetime.utcnow().isoformat()
             }
         )
-        
-        log_event(correlation_id, 'notification_status_updated', {
-            'analysis_id': analysis_id,
-            'table': DYNAMODB_TABLE
-        })
+
         
     except Exception as e:
         log_event(correlation_id, 'notification_update_error', {

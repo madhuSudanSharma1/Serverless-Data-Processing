@@ -11,21 +11,19 @@ from io import StringIO
 from botocore.exceptions import ClientError
 import time
 
-# Configure structured logging
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-# Initialize AWS clients with retry configuration
+# Initialize AWS clients
 s3_client = boto3.client('s3', 
     config=boto3.session.Config(
         retries={'max_attempts': 3, 'mode': 'adaptive'}
     )
 )
 
-# Initialize EventBridge client
 eventbridge_client = boto3.client('events')
 
-# Get environment variables
 BUCKET_NAME = os.environ.get('BUCKET_NAME')
 REGION = os.environ.get('REGION', 'us-east-1')
 EVENT_BUS_NAME = os.environ.get('EVENT_BUS_NAME', 'default')
@@ -35,7 +33,6 @@ def lambda_handler(event, context):
     correlation_id = str(uuid.uuid4())
     
     try:
-        # Log the incoming event with structured format
         log_event(correlation_id, 'lambda_triggered', {
             'message': 'Data processor lambda triggered',
             'bucket_name': BUCKET_NAME,
@@ -44,7 +41,6 @@ def lambda_handler(event, context):
             'lambda_request_id': context.aws_request_id if context else None
         })
         
-        # Extract S3 event information
         if not event.get('Records'):
             raise ValueError("No S3 records found in event")
             
@@ -53,18 +49,7 @@ def lambda_handler(event, context):
         object_key = record['s3']['object']['key']
         object_etag = record['s3']['object'].get('eTag', '').strip('"')
         
-        # Validate that the file is in the input/ folder
-        if not object_key.startswith('input/'):
-            log_event(correlation_id, 'invalid_location', {
-                'message': 'File not in input/ folder, skipping processing',
-                'object_key': object_key
-            }, level='WARNING')
-            return create_response(200, {
-                'message': 'File not in input folder, skipping',
-                'correlation_id': correlation_id
-            })
-        
-        # Check for idempotency - has this file been processed already?
+        # Has this file been processed already?
         if is_already_processed(bucket_name, object_key, object_etag, correlation_id):
             log_event(correlation_id, 'duplicate_processing_skipped', {
                 'message': 'File already processed, skipping',
@@ -82,13 +67,13 @@ def lambda_handler(event, context):
             'etag': object_etag
         })
         
-        # Download and process the file with retries
+        # Process the file with retries
         valid_records, invalid_records = process_csv_file_with_retry(
             bucket_name, object_key, correlation_id
         )
         
         # Upload processed data to appropriate folders with retries
-        processed_files = upload_results_with_retry(
+        processed_files = upload_results(
             bucket_name, object_key, valid_records, invalid_records, 
             correlation_id, object_etag
         )
@@ -136,7 +121,6 @@ def publish_processing_complete_event(processed_files: Dict, source_file: str,
                                     valid_count: int, invalid_count: int, correlation_id: str):
 
     try:
-        # Only trigger analysis if there are valid records
         if valid_count == 0:
             log_event(correlation_id, 'no_analysis_needed', {
                 'message': 'No valid records found, skipping analysis trigger',
@@ -145,7 +129,6 @@ def publish_processing_complete_event(processed_files: Dict, source_file: str,
             }, level='WARNING')
             return
         
-        # Create event detail with all necessary information for the analyzer
         event_detail = {
             'correlation_id': correlation_id,
             'source_file': source_file,
@@ -156,11 +139,9 @@ def publish_processing_complete_event(processed_files: Dict, source_file: str,
             'processing_timestamp': datetime.utcnow().isoformat(),
             'bucket_name': BUCKET_NAME,
             'region': REGION,
-            'trigger_analysis': True,
-            'data_quality_score': round((valid_count / (valid_count + invalid_count)) * 100, 2) if (valid_count + invalid_count) > 0 else 0
+            'trigger_analysis': True
         }
         
-        # Publish event to EventBridge
         response = eventbridge_client.put_events(
             Entries=[
                 {
@@ -173,13 +154,9 @@ def publish_processing_complete_event(processed_files: Dict, source_file: str,
             ]
         )
         
-        # Check if event was published successfully
+        # Failed or not
         failed_entries = response.get('FailedEntryCount', 0)
         if failed_entries > 0:
-            log_event(correlation_id, 'event_publish_failed', {
-                'failed_entries': failed_entries,
-                'failures': response.get('Entries', [])
-            }, level='ERROR')
             raise Exception(f"Failed to publish {failed_entries} events to EventBridge")
         
         log_event(correlation_id, 'processing_event_published', {
@@ -188,7 +165,6 @@ def publish_processing_complete_event(processed_files: Dict, source_file: str,
             'valid_records': valid_count,
             'invalid_records': invalid_count,
             'processed_file': processed_files.get('processed_file'),
-            'data_quality_score': event_detail['data_quality_score'],
             'event_id': response['Entries'][0].get('EventId') if response.get('Entries') else None
         })
         
@@ -228,10 +204,7 @@ def create_response(status_code: int, body: Dict) -> Dict:
     }
 
 def is_already_processed(bucket_name: str, object_key: str, object_etag: str, correlation_id: str) -> bool:
-    """
-    Check if file has already been processed by looking for processed output.
-    Idempotency check based on source file metadata.
-    """
+
     try:
         base_filename = object_key.split('/')[-1].replace('.csv', '')
         
@@ -286,8 +259,7 @@ def process_csv_file_with_retry(bucket_name: str, object_key: str, correlation_i
             error_code = e.response.get('Error', {}).get('Code', '')
             
             if error_code in ['NoSuchKey', 'AccessDenied']:
-                # Don't retry for these errors
-                raise
+                raise # Dont retry here
             
             if attempt < max_retries - 1:
                 wait_time = (2 ** attempt) + 1  # Exponential backoff
@@ -333,17 +305,15 @@ def process_csv_file(bucket_name: str, object_key: str, correlation_id: str) -> 
         valid_records = []
         invalid_records = []
         
-        for row_num, row in enumerate(csv_reader, start=2):  # Start at 2 for header
+        for row_num, row in enumerate(csv_reader, start=2):  # header is row 1
             validation_result = validate_smartphone_record(row, row_num)
             
             if validation_result['is_valid']:
-                # Add processing metadata
                 row['processed_at'] = datetime.utcnow().isoformat()
                 row['correlation_id'] = correlation_id
                 row['source_file'] = object_key
                 valid_records.append(row)
             else:
-                # Add rejection metadata
                 invalid_record = {
                     **row,
                     'rejection_reasons': ', '.join(validation_result['errors']),
@@ -439,31 +409,6 @@ def validate_smartphone_record(record: Dict, row_num: int) -> Dict:
         'errors': errors
     }
 
-def upload_results_with_retry(bucket_name: str, original_key: str, valid_records: List[Dict], 
-                            invalid_records: List[Dict], correlation_id: str, source_etag: str,
-                            max_retries: int = 3) -> Dict:
-
-    last_exception = None
-    
-    for attempt in range(max_retries):
-        try:
-            return upload_results(bucket_name, original_key, valid_records, 
-                                invalid_records, correlation_id, source_etag)
-        except Exception as e:
-            last_exception = e
-            if attempt < max_retries - 1:
-                wait_time = (2 ** attempt) + 1
-                log_event(correlation_id, 'retrying_upload', {
-                    'attempt': attempt + 1,
-                    'max_retries': max_retries,
-                    'wait_time': wait_time,
-                    'error': str(e)
-                }, level='WARNING')
-                time.sleep(wait_time)
-            else:
-                raise
-    
-    raise last_exception
 
 def upload_results(bucket_name: str, original_key: str, valid_records: List[Dict], 
                   invalid_records: List[Dict], correlation_id: str, source_etag: str) -> Dict:
