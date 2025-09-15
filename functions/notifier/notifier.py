@@ -21,16 +21,6 @@ REGION = os.environ.get('REGION', 'us-east-1')
 FROM_EMAIL = os.environ.get('FROM_EMAIL')
 TO_EMAIL = os.environ.get('TO_EMAIL')
 
-class DecimalEncoder(json.JSONEncoder):
-    """Custom JSON encoder to handle Decimal objects from DynamoDB"""
-    def default(self, obj):
-        if isinstance(obj, Decimal):
-            # Convert decimal to int if it's a whole number, otherwise to float
-            if obj % 1 == 0:
-                return int(obj)
-            else:
-                return float(obj)
-        return super(DecimalEncoder, self).default(obj)
 
 def convert_decimals(obj):
     if isinstance(obj, list):
@@ -129,21 +119,21 @@ def log_event(correlation_id: str, event_type: str, details: Dict, level: str = 
         'correlation_id': correlation_id,
         'event': event_type,
         'service': 'notifier',
-        **convert_decimals(details)  # Convert Decimals before logging
+        **convert_decimals(details)
     }
     
     if level == 'ERROR':
-        logger.error(json.dumps(log_entry, cls=DecimalEncoder))
+        logger.error(convert_decimals(log_entry))
     elif level == 'WARNING':
-        logger.warning(json.dumps(log_entry, cls=DecimalEncoder))
+        logger.warning(convert_decimals(log_entry))
     else:
-        logger.info(json.dumps(log_entry, cls=DecimalEncoder))
+        logger.info(convert_decimals(log_entry))
 
 def create_response(status_code: int, body: Dict) -> Dict:
     """Create standardized Lambda response with Decimal handling"""
     return {
         'statusCode': status_code,
-        'body': json.dumps(convert_decimals(body), cls=DecimalEncoder),
+        'body': convert_decimals(body),
         'headers': {
             'Content-Type': 'application/json'
         }
@@ -188,7 +178,7 @@ def send_email_notification(analysis_details: Dict, correlation_id: str) -> bool
         analysis_details = convert_decimals(analysis_details)
         
         # Generate email content
-        subject = generate_email_subject(analysis_details)
+        subject = f"Data Analysis Report - {analysis_details.get('analysis_id')}"
         html_body = generate_html_email_body(analysis_details)
         
         log_event(correlation_id, 'sending_email', {
@@ -238,23 +228,6 @@ def send_email_notification(analysis_details: Dict, correlation_id: str) -> bool
         }, level='ERROR')
         return False
 
-def generate_email_subject(analysis_details: Dict) -> str:
-
-    analysis_id = analysis_details.get('analysis_id', 'Unknown')
-    anomalies_count = len(analysis_details.get('anomalies', []))
-    
-    # Check for high severity anomalies
-    high_severity_anomalies = [
-        anomaly for anomaly in analysis_details.get('anomalies', [])
-        if anomaly.get('severity', '').lower() == 'high'
-    ]
-    
-    if high_severity_anomalies:
-        return f"ALERT: Data Analysis Report - High Priority Anomalies Detected ({analysis_id})"
-    elif anomalies_count > 0:
-        return f"Data Analysis Report - Anomalies Detected ({analysis_id})"
-    else:
-        return f"Data Analysis Report - All Normal ({analysis_id})"
 
 def generate_html_email_body(analysis_details: Dict) -> str:
     # Ensure no Decimals in the data

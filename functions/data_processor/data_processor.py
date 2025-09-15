@@ -409,7 +409,6 @@ def validate_smartphone_record(record: Dict, row_num: int) -> Dict:
         'errors': errors
     }
 
-
 def upload_results(bucket_name: str, original_key: str, valid_records: List[Dict], 
                   invalid_records: List[Dict], correlation_id: str, source_etag: str) -> Dict:
 
