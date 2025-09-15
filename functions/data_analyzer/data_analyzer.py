@@ -163,7 +163,7 @@ def analyze_with_bedrock(data: List[Dict], correlation_id: str) -> Dict:
 
         body = {
             "system": [
-                {"text": "You are a data analysis assistant. Provide insights, detect anomalies, and suggest recommendations based on the provided data."}
+                {"text": "You are a highly skilled and meticulous Data Analyst specializing in smartphone market trends. Your primary goal is to derive actionable business insights, identify critical anomalies, and formulate strategic recommendations from the provided sales data. Your analysis must be data-driven, precise, and presented in a structured JSON format."}
             ],
             "messages": [
                 {
