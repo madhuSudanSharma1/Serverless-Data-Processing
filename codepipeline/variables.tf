@@ -15,7 +15,7 @@ variable "branch" {
   default     = "main"
 }
 
-variable "code_connection_arn" {
-  description = "ARN of the CodeConnection to GitHub"
+variable "code_connection_name" {
+  description = "The name of the CodeStar Connections connection"
   type        = string
 }

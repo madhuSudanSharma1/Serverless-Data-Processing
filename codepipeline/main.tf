@@ -13,6 +13,9 @@ module "artifacts_bucket" {
     Owner   = "madhu"
   }
 }
+data "aws_codestarconnections_connection" "madhu_github" {
+  name = var.code_connection_name
+}
 
 # Codepipeline role
 module "codepipeline_role" {
@@ -39,7 +42,7 @@ module "codepipeline_role" {
       {
         Effect   = "Allow",
         Action   = "codestar-connections:UseConnection",
-        Resource = var.code_connection_arn
+        Resource = data.aws_codestarconnections_connection.madhu_github.arn
       },
       {
         Effect = "Allow",
@@ -145,7 +148,7 @@ resource "aws_codepipeline" "pipeline" {
       version          = "1"
       output_artifacts = ["source_output"]
       configuration = {
-        ConnectionArn    = var.code_connection_arn
+        ConnectionArn    = data.aws_codestarconnections_connection.madhu_github.arn
         FullRepositoryId = var.repository
         BranchName       = var.branch
       }
