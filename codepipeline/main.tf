@@ -104,7 +104,7 @@ resource "aws_codebuild_project" "validate_and_test" {
   }
   source {
     type      = "CODEPIPELINE"
-    buildspec = "build.yaml"
+    buildspec = "codepipeline/build.yaml"
   }
 }
 
@@ -121,7 +121,7 @@ resource "aws_codebuild_project" "deploy" {
   }
   source {
     type      = "CODEPIPELINE"
-    buildspec = "deploy.yaml"
+    buildspec = "codepipeline/deploy.yaml"
   }
 }
 
