@@ -21,3 +21,7 @@ phases:
   post_build:
     commands:
       - echo "Build phase complete."
+
+artifacts:
+  files:
+    - 'infrastructure/**'
