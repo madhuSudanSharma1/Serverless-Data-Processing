@@ -9,6 +9,7 @@ phases:
       - unzip terraform_1.12.0_linux_amd64.zip -d /usr/local/bin/
   build:
     commands:
+      - cd infrastructure
       - terraform init
       - terraform plan -out=tfplan
       - terraform apply -auto-approve tfplan
