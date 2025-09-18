@@ -7,7 +7,7 @@ This project implements a serverless data processing pipeline using AWS services
 
 ## Architecture Diagram
 
-![alt text](./screenshots/image-30.png)
+![alt text](./screenshots/image-new.png)
 
 Basic flow:
 - A CSV file is uploaded to the `input/` folder in the S3 bucket.
